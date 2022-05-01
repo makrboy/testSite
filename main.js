@@ -85,9 +85,12 @@ let menus = {
         state: {
           default: "on"
         }
-      },
+      }, // dev log
       {
         values: ["on", "off"],
+        condition: function() {
+          return true
+        },
         effects: {
           "on": {
             title: {
@@ -115,7 +118,7 @@ let menus = {
         state: {
           default: "off"
         }
-      },
+      }, // fake slots
       {
         values: ["Red", "Green", "Blue"],
         effects: {
@@ -151,7 +154,7 @@ let menus = {
         state: {
           default: "Red"
         }
-      }
+      } // colorTest
     ]
   },
   settings: {
@@ -197,7 +200,7 @@ let menus = {
         state: {
           default: "off"
         }
-      },
+      }, // warp
       {
         values: ["click"],
         effects: {
@@ -216,7 +219,7 @@ let menus = {
         state: {
           default: "click"
         }
-      },
+      }, // dev settings
       {
         values: ["1", "2"],
         effects: {
@@ -247,7 +250,134 @@ let menus = {
         state: {
           default: "2"
         }
-      }
+      }  // color mode
+    ]
+  },
+  colorPicker: {
+    setup: {
+			func: function() {
+				const i = menus.colorPicker
+				i.buttons=[]
+				for (var n=0;n<colors.length;n++) {
+					const c = colors[n]
+					i.buttons.push({
+        values: ["click"],
+        effects: {
+          "click": {
+            func: function() {
+              brushColor = c
+            },
+            color: rgb(c)
+          }
+        },
+        state: {
+          default: "click"
+        }
+      })
+				}
+			}
+		},
+    grid: {
+      padding: 0.15,
+      color: 6
+    },
+    title: {
+      text: "Color Picker",
+      size: 7,
+      color: 5,
+      offset: 10
+    },
+    buttons: [ //
+      {
+        values: ["click"],
+        effects: {
+          "click": {
+            title: {
+              text: "Canvas",
+              size: 13,
+              color: 5
+            },
+            func: function() {
+              nav.push("levelCanvas")
+            },
+            color: 2
+          }
+        },
+        state: {
+          default: "click"
+        }
+      }, // canvas
+    ]
+  },
+  editor: {
+    grid: {
+      padding: 0.15,
+      color: 6
+    },
+    title: {
+      text: "Editor",
+      size: 7,
+      color: 5,
+      offset: 10
+    },
+    buttons: [ //
+      {
+        values: ["click"],
+        effects: {
+          "click": {
+            title: {
+              text: "Canvas",
+              size: 13,
+              color: 5
+            },
+            func: function() {
+              nav.push("levelCanvas")
+            },
+            color: 2
+          }
+        },
+        state: {
+          default: "click"
+        }
+      }, // canvas
+      {
+        values: ["click"],
+        effects: {
+          "click": {
+            title: {
+              text: "Color Picker",
+              size: 13,
+              color: 5
+            },
+            func: function() {
+              nav.push("colorPicker")
+            },
+            color: 2
+          }
+        },
+        state: {
+          default: "click"
+        }
+      }, // color picker
+      {
+        values: ["click"],
+        effects: {
+          "click": {
+            title: {
+              text: "Block Editor",
+              size: 13,
+              color: 5
+            },
+            func: function() {
+              nav.push("blockEditor")
+            },
+            color: 2
+          }
+        },
+        state: {
+          default: "click"
+        }
+      }, // block editor
     ]
   },
 	pauseMenu: {
@@ -280,7 +410,7 @@ let menus = {
         state: {
           default: "click"
         }
-      },
+      }, // settings
 			{
         values: ["click"],
         effects: {
@@ -299,7 +429,26 @@ let menus = {
         state: {
           default: "click"
         }
-      }
+      }, // levels
+			{
+        values: ["click"],
+        effects: {
+          "click": {
+            title: {
+              text: "Editor",
+              size: 15,
+              color: 5
+            },
+            func: function() {
+              nav.push("editor")
+            },
+            color: 2
+          }
+        },
+        state: {
+          default: "click"
+        }
+      }, // editor
     ]
   },
 	levelSelection :{
@@ -424,6 +573,27 @@ let triggers = [
   },
   {
     input: {
+      buttons: {
+        whitelist: [
+          1
+        ]
+      },
+      other: function() {
+        return nav.length>0
+      }
+    },
+    mode: {
+      when: "onRelease",
+    },
+    output: function() {
+      const i = nav.pop()
+			if (menus[i].setup!=undefined) {
+				menus[i].setup.state=true
+			}
+    }
+  },
+  {
+    input: {
       keys: {
         whitelist: ["Shift"]
       },
@@ -487,12 +657,15 @@ let colorKey = [
   [`rgb(225,225,225,0.1)`, `rgb(0,0,0)`, `rgb(0,0,255)`, `rgb(255,0,0)`, `rgb(0,255,0)`, `rgb(0,0,0)`, `rgb(255,255,255)`],
   [`rgb(0,0,0,0.1)`, `rgb(225,225,225)`, `rgb(0,0,155)`, `rgb(155,0,0)`, `rgb(0,155,0)`, `rgb(255,255,255)`, `rgb(0,0,0)`]
 ]
+let colors = []
+let brushColor
 let gridX = world[0].length
 let gridY = world.length
 let pressedKeys = []
 let pressedButtons = []
 let nav = []
 let wheelScroll = 0
+let oldWheelScroll = 0
 let mouse = {
   x: 0,
   y: 0,
@@ -501,120 +674,12 @@ let mouse = {
 }
 let log = ""
 let oldLog = ""
-
-function remember() {
-  localStorage.setItem("main", JSON.stringify(string))
+onmousemove = function(e) {
+  mouse.x = minmax(e.clientX, 0, canvasX)
+  mouse.y = minmax(e.clientY, 0, canvasY)
+  mouse.gridX = minmax(Math.floor(e.clientX / (canvasX / gridX)), 0, gridX - 1)
+  mouse.gridY = minmax(Math.floor(e.clientY / (canvasY / gridY)), 0, gridY - 1)
 }
-
-function renderMenu(i) {
-  if (menus[i] != undefined) {
-    const n = menus[i]
-		if (n.setup!=undefined&&n.setup.state!==false) {
-			n.setup.state = false
-			n.setup.func()
-		}
-    const cx = canvasX
-    const cy = canvasY
-    const p = n.grid.padding
-    const mx = mouse.x
-    const my = mouse.y
-    let sx = 0
-    let sy = 0
-    let ex = 100
-    let ey = 100
-    let to = 0
-    let ts, tw
-		let gx = 1
-		let gy = 1
-    ctx.textAlign = "center"
-    ctx.textBaseline = "middle"
-		if (n.grid.x!=undefined) {
-			gx = n.grid.x
-			gy = n.grid.y
-		} else {
-			let i = 0
-			while ((gx*gy)<n.buttons.length) {
-				if (i%2===0) {
-					gx++
-				} else {
-					gy++
-				}
-				i++
-			}
-		}
-    if (n.size != undefined) {
-      sx = n.size.startX
-      sy = n.size.startY
-      ex = n.size.endX
-      ey = n.size.endY
-    }
-    if (n.title != undefined) {
-      tw = n.title.text
-      ts = n.title.size
-      to = n.title.offset
-    }
-    ctx.fillStyle = colorKey[colorMode][n.grid.color]
-    ctx.fillRect(sx * (cx / fcx), sy * (cy / fcy), (ex - sx) * (cx / fcx), (ey - sy) * (cy / fcy))
-    for (var y = 0; y < gy; y++) {
-      for (var x = 0; x < gx; x++) {
-        if (n.buttons[y * gx + x] != undefined || showButtonSpots) {
-          const b = n.buttons[(y * gx + x) % n.buttons.length]
-          let x1 = sx * (cx / fcx) + (x * 2 + 1) * ((ex - sx) / gx * p / 2) * (cx / fcx) + x * ((ex - sx) / gx - (ex - sx) / gx * p) * (cx / fcx)
-          let x2 = ((ex - sx) / gx - (ex - sx) / gx * p) * (cx / fcx)
-          let y1 = to * (cy / fcy) + sy * (cy / fcy) + (y * 2 + 1) * ((ey - sy - to) / gy * p / 2) * (cy / fcy) + y * ((ey - sy - to) / gy - (ey - sy - to) / gy * p) * (cy / fcy)
-          let y2 = ((ey - sy - to) / gy - (ey - sy - to) / gy * p) * (cy / fcy)
-          if (b.state.curent == undefined) {
-            b.state.curent = b.state.default
-          }
-          if (mx >= x1 && mx <= x1 + x2 && my >= y1 && my <= y1 + y2) {
-            const i = y * gx + x
-            if (clickTracker[0] === true || clickTracker[2] === true) {
-              if (clickTracker[0] === true) {
-                b.state.curent = b.values[(b.values.indexOf(b.state.curent) + b.values.length - 1) % b.values.length]
-                clickTracker[0] = false
-              }
-              if (clickTracker[2] === true) {
-                b.state.curent = b.values[(b.values.indexOf(b.state.curent) + b.values.length + 1) % b.values.length]
-                clickTracker[2] = false
-              }
-              const d = {
-                x: x,
-                y: y,
-                button: b,
-              }
-              b.effects[b.state.curent].func(b)
-            }
-            ctx.fillStyle = `rgb(0,0,0,0.5)`
-            ctx.fillRect(x1, y1, x2, y2)
-            x1 = sx * (cx / fcx) + x * ((ex - sx) / gx) * (cx / fcx)
-            x2 = ((ex - sx) / gx) * (cx / fcx)
-            y1 = to * (cy / fcy) + sy * (cy / fcy) + y * ((ey - sy - to) / gy) * (cy / fcy)
-            y2 = ((ey - sy - to) / gy) * (cy / fcy)
-          }
-          ctx.fillStyle = colorKey[colorMode][b.effects[b.state.curent].color]
-          ctx.fillRect(x1, y1, x2, y2)
-          const e = b.state.curent
-          if (b.effects[e].title != undefined) {
-            const t = b.effects[e].title
-            ctx.font = t.size * Math.min(1 / gx, 1 / gy) * Math.min(cx / fcx, cy / fcy) + "px Arial"
-            ctx.fillStyle = colorKey[colorMode][t.color]
-            ctx.fillText(t.text, x1 + x2 / 2, y1 + y2 / 2)
-          }
-        }
-      }
-    }
-    if (n.title != undefined) {
-      ctx.fillStyle = colorKey[colorMode][n.title.color]
-      ctx.font = ts * Math.min(cx / fcx, cy / fcy) + "px Arial";
-      ctx.fillText(tw, (ex - (ex - sx) / 2) * (cx / fcx), (sy + to / 2) * (cy / fcy))
-    }
-  }
-}
-
-function buttonPressed(i) {
-  clickTracker[i] = true
-}
-
 document.addEventListener('keydown', (event) => {
   const keyName = event.key;
   if (allowedNameChars.includes(keyName) && !(pressedKeys.includes("Control") && pressedKeys.includes("Alt"))) {
@@ -628,23 +693,13 @@ document.addEventListener('keydown', (event) => {
     pressedKeys.push(keyName)
   }
 })
-
 document.addEventListener('keyup', (event) => {
   const keyName = event.key;
   pressedKeys.splice(pressedKeys.indexOf(keyName), 1)
 })
-
 document.addEventListener("wheel", (event) => {
   wheelScroll += event.deltaY / 150
 });
-
-onmousemove = function(e) {
-  mouse.x = minmax(e.clientX, 0, canvasX)
-  mouse.y = minmax(e.clientY, 0, canvasY)
-  mouse.gridX = minmax(Math.floor(e.clientX / (canvasX / gridX)), 0, gridX - 1)
-  mouse.gridY = minmax(Math.floor(e.clientY / (canvasY / gridY)), 0, gridY - 1)
-}
-
 document.addEventListener('mousedown', e => {
   const button = event.button;
   if (!pressedButtons.includes(button)) {
@@ -652,7 +707,6 @@ document.addEventListener('mousedown', e => {
     pressedButtons.push(button)
   }
 });
-
 document.addEventListener('mouseup', e => {
   const button = event.button;
   if (pressedButtons.includes(button)) {
@@ -660,9 +714,7 @@ document.addEventListener('mouseup', e => {
   }
   pressedButtons.splice(pressedButtons.indexOf(button), 1)
 });
-
 document.addEventListener("contextmenu", e => e.preventDefault());
-
 function resize() {
   canvas.width = canvasX = window.innerWidth
   canvas.height = canvasY = window.innerHeight
@@ -673,7 +725,9 @@ function resize() {
 }
 window.onresize = resize
 resize()
-
+function rgb(i) {
+  return ("rgb("+i.r+","+i.g+","+i.b+")")
+}
 function checkInput(i) {
   let state = true
   if (i.input.keys != undefined) {
@@ -727,16 +781,122 @@ function checkInput(i) {
   }
   i.mode.old = state
 }
-
+function menu(i) {
+  if (menus[i] != undefined) {
+    const n = menus[i]
+    if (n.setup!=undefined&&n.setup.state!==false) {
+      n.setup.state = false
+      n.setup.func()
+    }
+    const cx = canvasX
+    const cy = canvasY
+    const p = n.grid.padding
+    const mx = mouse.x
+    const my = mouse.y
+    let sx = 0
+    let sy = 0
+    let ex = 100
+    let ey = 100
+    let to = 0
+    let ts, tw
+    let gx = 1
+    let gy = 1
+    ctx.textAlign = "center"
+    ctx.textBaseline = "middle"
+    if (n.grid.x!=undefined) {
+      gx = n.grid.x
+      gy = n.grid.y
+    } else {
+      let i = 0
+      while ((gx*gy)<n.buttons.length) {
+        if (i%2===0) {
+          gx++
+        } else {
+          gy++
+        }
+        i++
+      }
+    }
+    if (n.size != undefined) {
+      sx = n.size.startX
+      sy = n.size.startY
+      ex = n.size.endX
+      ey = n.size.endY
+    }
+    if (n.title != undefined) {
+      tw = n.title.text
+      ts = n.title.size
+      to = n.title.offset
+    }
+    ctx.fillStyle = colorKey[colorMode][n.grid.color]
+    ctx.fillRect(sx * (cx / fcx), sy * (cy / fcy), (ex - sx) * (cx / fcx), (ey - sy) * (cy / fcy))
+    const unlockedButtons=n.buttons.filter(button => button.condition==undefined || button.condition()!==false)
+    for (var y = 0; y < gy; y++) {
+      for (var x = 0; x < gx; x++) {
+        if (unlockedButtons[y * gx + x] != undefined || showButtonSpots) {
+          const b = unlockedButtons[(y * gx + x) % unlockedButtons.length]
+          let x1 = sx * (cx / fcx) + (x * 2 + 1) * ((ex - sx) / gx * p / 2) * (cx / fcx) + x * ((ex - sx) / gx - (ex - sx) / gx * p) * (cx / fcx)
+          let x2 = ((ex - sx) / gx - (ex - sx) / gx * p) * (cx / fcx)
+          let y1 = to * (cy / fcy) + sy * (cy / fcy) + (y * 2 + 1) * ((ey - sy - to) / gy * p / 2) * (cy / fcy) + y * ((ey - sy - to) / gy - (ey - sy - to) / gy * p) * (cy / fcy)
+          let y2 = ((ey - sy - to) / gy - (ey - sy - to) / gy * p) * (cy / fcy)
+          if (b.state.curent == undefined) {
+            b.state.curent = b.state.default
+          }
+          if (mx >= x1 && mx <= x1 + x2 && my >= y1 && my <= y1 + y2) {
+            const i = y * gx + x
+            if (clickTracker[0] === true || clickTracker[2] === true || oldWheelScroll !== wheelScroll) {
+              if (clickTracker[0] === true || oldWheelScroll < wheelScroll) {
+                b.state.curent = b.values[(b.values.indexOf(b.state.curent) + b.values.length - 1) % b.values.length]
+                clickTracker[0] = false
+              }
+              if (clickTracker[2] === true || oldWheelScroll > wheelScroll) {
+                b.state.curent = b.values[(b.values.indexOf(b.state.curent) + b.values.length + 1) % b.values.length]
+                clickTracker[2] = false
+              }
+              const d = {
+                x: x,
+                y: y,
+                button: b,
+              }
+              b.effects[b.state.curent].func(d)
+            }
+            ctx.fillStyle = `rgb(0,0,0,0.5)`
+            ctx.fillRect(x1, y1, x2, y2)
+            x1 = sx * (cx / fcx) + x * ((ex - sx) / gx) * (cx / fcx)
+            x2 = ((ex - sx) / gx) * (cx / fcx)
+            y1 = to * (cy / fcy) + sy * (cy / fcy) + y * ((ey - sy - to) / gy) * (cy / fcy)
+            y2 = ((ey - sy - to) / gy) * (cy / fcy)
+          }
+          ctx.fillStyle = colorKey[colorMode][b.effects[b.state.curent].color]
+          ctx.fillRect(x1, y1, x2, y2)
+          const e = b.state.curent
+          if (b.effects[e].title != undefined) {
+            const t = b.effects[e].title
+            ctx.font = t.size * Math.min(1 / gx, 1 / gy) * Math.min(cx / fcx, cy / fcy) + "px Arial"
+            ctx.fillStyle = colorKey[colorMode][t.color]
+            ctx.fillText(t.text, x1 + x2 / 2, y1 + y2 / 2)
+          }
+        }
+      }
+    }
+    if (n.title != undefined) {
+      ctx.fillStyle = colorKey[colorMode][n.title.color]
+      ctx.font = ts * Math.min(cx / fcx, cy / fcy) + "px Arial";
+      ctx.fillText(tw, (ex - (ex - sx) / 2) * (cx / fcx), (sy + to / 2) * (cy / fcy))
+    }
+    oldWheelScroll = wheelScroll
+  }
+}
+function buttonPressed(i) {
+  clickTracker[i] = true
+}
 function minmax(i, min, max) {
   return (Math.max(Math.min(i, max), min))
 }
-
 function clearSlate() {
   ctx.fillStyle = colorKey[colorMode][0]
   ctx.fillRect(0, 0, canvas.width, canvas.height)
 }
-
 function renderWorld() {
   for (var y = 0; y < gridY; y++) {
     for (var x = 0; x < gridX; x++) {
@@ -745,14 +905,13 @@ function renderWorld() {
     }
   }
 }
-
 function update(time) {
   deltaTime = time - lastTime
   lastTime = time
 
   clearSlate()
   renderWorld()
-  renderMenu(nav[nav.length-1])
+  menu(nav[nav.length-1])
 
   triggers.forEach((input) => {
     checkInput(input)
