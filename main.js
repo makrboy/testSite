@@ -1,0 +1,772 @@
+const canvas = document.querySelector('canvas');
+const ctx = canvas.getContext('2d');
+const allowedNameChars = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l",
+  "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C",
+  "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
+  "U", "V", "W", "X", "Y", "Z", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", ".",
+  "-", "_", ",", "/", "\\", " ", "!", "?", "(", ")"
+]
+/*const nav = {
+  home: {
+    play: {
+      levels: {},
+
+363px
+Console (beta)
+Clear console
+Minimize
+104
+0
+0
+0
+"x:339 y:340 grid x:9 grid y:9 wheel:0 keys: mouse buttons: string:"
+
+      demo: {},
+      myLevels: {},
+      userLevels: {}
+    },
+    edit: {
+      block: {
+        saved: {},
+        particles: {},
+        settings: {}
+      },
+      color: {
+        saved: {},
+        sliders: {}
+      },
+      world: {
+        settings: {},
+        background: {},
+        sound: {}
+      }
+    }
+  }
+}*/
+let menus = {
+  devSettings: {
+    grid: {
+      padding: 0.15,
+      color: 6
+    },
+    title: {
+      text: "Dev Settings",
+      size: 7,
+      color: 5,
+      offset: 10
+    },
+    buttons: [ //
+      {
+        values: ["on", "off"],
+        effects: {
+          "on": {
+            title: {
+              text: "Dev Log On",
+              size: 13,
+              color: 5
+            },
+            func: function() {
+              devLog = true
+            },
+            color: 4
+          },
+          "off": {
+            title: {
+              text: "Dev Log Off",
+              size: 13,
+              color: 5
+            },
+            func: function() {
+              devLog = false
+            },
+            color: 3
+          }
+        },
+        state: {
+          default: "on"
+        }
+      },
+      {
+        values: ["on", "off"],
+        effects: {
+          "on": {
+            title: {
+              text: "Fake Slots On",
+              size: 13,
+              color: 5
+            },
+            func: function() {
+              showButtonSpots = true
+            },
+            color: 4
+          },
+          "off": {
+            title: {
+              text: "Fake Slots Off",
+              size: 13,
+              color: 5
+            },
+            func: function() {
+              showButtonSpots = false
+            },
+            color: 3
+          }
+        },
+        state: {
+          default: "off"
+        }
+      },
+      {
+        values: ["Red", "Green", "Blue"],
+        effects: {
+          "Red": {
+            title: {
+              text: "Red",
+              size: 18,
+              color: 5
+            },
+            func: function() {},
+            color: 3
+          },
+          "Green": {
+            title: {
+              text: "Green",
+              size: 18,
+              color: 5
+            },
+            func: function() {},
+            color: 4
+          },
+          "Blue": {
+            title: {
+              text: "Blue",
+              size: 18,
+              color: 5
+            },
+            func: function() {},
+            size: 10,
+            color: 2
+          }
+        },
+        state: {
+          default: "Red"
+        }
+      }
+    ]
+  },
+  settings: {
+    grid: {
+      padding: 0.15,
+      color: 6
+    },
+    title: {
+      text: "Settings",
+      size: 7,
+      color: 5,
+      offset: 10
+    },
+    buttons: [ //
+      {
+        values: ["on", "off"],
+        effects: {
+          "on": {
+            title: {
+              text: "Warp Mode On",
+              size: 11,
+              color: 5
+            },
+            func: function() {
+              warp = true
+              resize()
+            },
+            color: 4
+          },
+          "off": {
+            title: {
+              text: "Warp Mode Off",
+              size: 11,
+              color: 5
+            },
+            func: function() {
+              warp = false
+              resize()
+            },
+            color: 3
+          }
+        },
+        state: {
+          default: "off"
+        }
+      },
+      {
+        values: ["click"],
+        effects: {
+          "click": {
+            title: {
+              text: "Dev Settings",
+              size: 13,
+              color: 5
+            },
+            func: function() {
+              nav.push("devSettings")
+            },
+            color: 2
+          }
+        },
+        state: {
+          default: "click"
+        }
+      },
+      {
+        values: ["1", "2"],
+        effects: {
+          "1": {
+            title: {
+              text: `Color Mode 1`,
+              size: 13,
+              color: 5
+            },
+            func: function() {
+              colorMode = 0
+            },
+            color: 2
+          },
+          "2": {
+            title: {
+              text: `Color Mode 2`,
+              size: 13,
+              color: 5
+            },
+            func: function() {
+              colorMode = 1
+            },
+            color: 2
+          }
+
+        },
+        state: {
+          default: "2"
+        }
+      }
+    ]
+  },
+	pauseMenu: {
+    grid: {
+      padding: 0.15,
+      color: 6
+    },
+    title: {
+      text: "Pause Menu",
+      size: 7,
+      color: 5,
+      offset: 10
+    },
+    buttons: [ //
+      {
+        values: ["click"],
+        effects: {
+          "click": {
+            title: {
+              text: "Settings",
+              size: 13,
+              color: 5
+            },
+            func: function() {
+              nav.push("settings")
+            },
+            color: 2
+          }
+        },
+        state: {
+          default: "click"
+        }
+      },
+			{
+        values: ["click"],
+        effects: {
+          "click": {
+            title: {
+              text: "Levels",
+              size: 15,
+              color: 5
+            },
+            func: function() {
+              nav.push("levelSelection")
+            },
+            color: 2
+          }
+        },
+        state: {
+          default: "click"
+        }
+      }
+    ]
+  },
+	levelSelection :{
+		setup: {
+			func: function() {
+				const i = menus.levelSelection
+				i.buttons=[]
+				for (var n=0;n<levels.length;n++) {
+					const l = levels[n]
+					let tt = "Level "+(n+1)
+					let ts = 10
+					if (l.title!=undefined) {
+						tt = l.title.text
+						ts = l.title.size
+					}
+					i.buttons.push({
+        values: ["click"],
+        effects: {
+          "click": {
+            title: {
+              text: tt,
+              size: ts,
+              color: 5
+            },
+            func: function() {
+              nav.push("settings")
+            },
+            color: 2
+          }
+        },
+        state: {
+          default: "click"
+        }
+      })
+				}
+			}
+		},
+		grid: {
+			padding: 0.15,
+			color: 6
+		},
+		title: {
+			text: "Level Selection",
+			size: 10,
+			offset: 20,
+			color: 5
+		}
+	}
+}
+let levels = [
+	{
+		title: {
+			text: "Test",
+			size: 10
+		}
+	},
+	{}
+]
+let triggers = [
+  /* 
+	{
+    input: {
+      keys: {
+        whitelist: [
+        ],
+        blacklist: []
+      },
+      buttons: {
+        whitelist: [],
+        blacklist: []
+      },
+      other: function() {
+				return()
+			}
+    },
+    mode: {
+      when: "onPress",
+      old: false
+    },
+    output: function() {
+    }
+  },
+	*/
+  {
+    input: {
+      keys: {
+        whitelist: [
+          "Escape"
+        ]
+      },
+      other: function() {
+        return nav.length==0
+      }
+    },
+    mode: {
+      when: "onRelease",
+    },
+    output: function() {
+      nav = ["pauseMenu"]
+    }
+  },
+	{
+    input: {
+      keys: {
+        whitelist: [
+          "Escape"
+        ]
+      },
+      other: function() {
+        return nav.length>0
+      }
+    },
+    mode: {
+      when: "onRelease",
+    },
+    output: function() {
+      const i = nav.pop()
+			if (menus[i].setup!=undefined) {
+				menus[i].setup.state=true
+			}
+    }
+  },
+  {
+    input: {
+      keys: {
+        whitelist: ["Shift"]
+      },
+      buttons: {
+        whitelist: [0]
+      }
+    },
+    mode: {
+      when: "onPress"
+    },
+    output: function() {
+      string = JSON.parse(localStorage.getItem("main"))
+      ctx.fillStyle = colorKey[colorMode][3]
+      ctx.fillRect(0, 0, canvasX, canvasY)
+    }
+  },
+  {
+    input: {
+      keys: {
+        whitelist: ["Shift"]
+      },
+      buttons: {
+        whitelist: [2]
+      }
+    },
+    mode: {
+      when: "onPress"
+    },
+    output: function() {
+      localStorage.setItem("main", JSON.stringify(string))
+      ctx.fillStyle = colorKey[colorMode][4]
+      ctx.fillRect(0, 0, canvasX, canvasY)
+    }
+  }
+]
+const fcx = 100
+const fcy = 100
+let clickTracker = [false, false, false]
+let showButtonSpots = false
+let warp = false
+let devLog = true
+let world = [
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
+  [0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
+  [0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
+  [0, 0, 0, 1, 1, 1, 1, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+]
+let string = []
+let deltaTime = 0
+let canvasX = 0
+let canvasY = 0
+let lastTime = 0
+let colorMode = 1
+let colorKey = [
+  [`rgb(225,225,225,0.1)`, `rgb(0,0,0)`, `rgb(0,0,255)`, `rgb(255,0,0)`, `rgb(0,255,0)`, `rgb(0,0,0)`, `rgb(255,255,255)`],
+  [`rgb(0,0,0,0.1)`, `rgb(225,225,225)`, `rgb(0,0,155)`, `rgb(155,0,0)`, `rgb(0,155,0)`, `rgb(255,255,255)`, `rgb(0,0,0)`]
+]
+let gridX = world[0].length
+let gridY = world.length
+let pressedKeys = []
+let pressedButtons = []
+let nav = []
+let wheelScroll = 0
+let mouse = {
+  x: 0,
+  y: 0,
+  gridX: 0,
+  gridY: 0
+}
+let log = ""
+let oldLog = ""
+
+function remember() {
+  localStorage.setItem("main", JSON.stringify(string))
+}
+
+function renderMenu(i) {
+  if (menus[i] != undefined) {
+    const n = menus[i]
+		if (n.setup!=undefined&&n.setup.state!==false) {
+			n.setup.state = false
+			n.setup.func()
+		}
+    const cx = canvasX
+    const cy = canvasY
+    const p = n.grid.padding
+    const mx = mouse.x
+    const my = mouse.y
+    let sx = 0
+    let sy = 0
+    let ex = 100
+    let ey = 100
+    let to = 0
+    let ts, tw
+		let gx = 1
+		let gy = 1
+    ctx.textAlign = "center"
+    ctx.textBaseline = "middle"
+		if (n.grid.x!=undefined) {
+			gx = n.grid.x
+			gy = n.grid.y
+		} else {
+			let i = 0
+			while ((gx*gy)<n.buttons.length) {
+				if (i%2===0) {
+					gx++
+				} else {
+					gy++
+				}
+				i++
+			}
+		}
+    if (n.size != undefined) {
+      sx = n.size.startX
+      sy = n.size.startY
+      ex = n.size.endX
+      ey = n.size.endY
+    }
+    if (n.title != undefined) {
+      tw = n.title.text
+      ts = n.title.size
+      to = n.title.offset
+    }
+    ctx.fillStyle = colorKey[colorMode][n.grid.color]
+    ctx.fillRect(sx * (cx / fcx), sy * (cy / fcy), (ex - sx) * (cx / fcx), (ey - sy) * (cy / fcy))
+    for (var y = 0; y < gy; y++) {
+      for (var x = 0; x < gx; x++) {
+        if (n.buttons[y * gx + x] != undefined || showButtonSpots) {
+          const b = n.buttons[(y * gx + x) % n.buttons.length]
+          let x1 = sx * (cx / fcx) + (x * 2 + 1) * ((ex - sx) / gx * p / 2) * (cx / fcx) + x * ((ex - sx) / gx - (ex - sx) / gx * p) * (cx / fcx)
+          let x2 = ((ex - sx) / gx - (ex - sx) / gx * p) * (cx / fcx)
+          let y1 = to * (cy / fcy) + sy * (cy / fcy) + (y * 2 + 1) * ((ey - sy - to) / gy * p / 2) * (cy / fcy) + y * ((ey - sy - to) / gy - (ey - sy - to) / gy * p) * (cy / fcy)
+          let y2 = ((ey - sy - to) / gy - (ey - sy - to) / gy * p) * (cy / fcy)
+          if (b.state.curent == undefined) {
+            b.state.curent = b.state.default
+          }
+          if (mx >= x1 && mx <= x1 + x2 && my >= y1 && my <= y1 + y2) {
+            const i = y * gx + x
+            if (clickTracker[0] === true || clickTracker[2] === true) {
+              if (clickTracker[0] === true) {
+                b.state.curent = b.values[(b.values.indexOf(b.state.curent) + b.values.length - 1) % b.values.length]
+                clickTracker[0] = false
+              }
+              if (clickTracker[2] === true) {
+                b.state.curent = b.values[(b.values.indexOf(b.state.curent) + b.values.length + 1) % b.values.length]
+                clickTracker[2] = false
+              }
+              const d = {
+                x: x,
+                y: y,
+                button: b,
+              }
+              b.effects[b.state.curent].func(b)
+            }
+            ctx.fillStyle = `rgb(0,0,0,0.5)`
+            ctx.fillRect(x1, y1, x2, y2)
+            x1 = sx * (cx / fcx) + x * ((ex - sx) / gx) * (cx / fcx)
+            x2 = ((ex - sx) / gx) * (cx / fcx)
+            y1 = to * (cy / fcy) + sy * (cy / fcy) + y * ((ey - sy - to) / gy) * (cy / fcy)
+            y2 = ((ey - sy - to) / gy) * (cy / fcy)
+          }
+          ctx.fillStyle = colorKey[colorMode][b.effects[b.state.curent].color]
+          ctx.fillRect(x1, y1, x2, y2)
+          const e = b.state.curent
+          if (b.effects[e].title != undefined) {
+            const t = b.effects[e].title
+            ctx.font = t.size * Math.min(1 / gx, 1 / gy) * Math.min(cx / fcx, cy / fcy) + "px Arial"
+            ctx.fillStyle = colorKey[colorMode][t.color]
+            ctx.fillText(t.text, x1 + x2 / 2, y1 + y2 / 2)
+          }
+        }
+      }
+    }
+    if (n.title != undefined) {
+      ctx.fillStyle = colorKey[colorMode][n.title.color]
+      ctx.font = ts * Math.min(cx / fcx, cy / fcy) + "px Arial";
+      ctx.fillText(tw, (ex - (ex - sx) / 2) * (cx / fcx), (sy + to / 2) * (cy / fcy))
+    }
+  }
+}
+
+function buttonPressed(i) {
+  clickTracker[i] = true
+}
+
+document.addEventListener('keydown', (event) => {
+  const keyName = event.key;
+  if (allowedNameChars.includes(keyName) && !(pressedKeys.includes("Control") && pressedKeys.includes("Alt"))) {
+    string.push(keyName)
+  } else if (string.length > 0 && keyName === "Backspace" && !pressedKeys.includes("Control")) {
+    string.pop()
+  } else if (string.length > 0 && keyName === "Backspace" && pressedKeys.includes("Control")) {
+    string = []
+  }
+  if (!pressedKeys.includes(keyName)) {
+    pressedKeys.push(keyName)
+  }
+})
+
+document.addEventListener('keyup', (event) => {
+  const keyName = event.key;
+  pressedKeys.splice(pressedKeys.indexOf(keyName), 1)
+})
+
+document.addEventListener("wheel", (event) => {
+  wheelScroll += event.deltaY / 150
+});
+
+onmousemove = function(e) {
+  mouse.x = minmax(e.clientX, 0, canvasX)
+  mouse.y = minmax(e.clientY, 0, canvasY)
+  mouse.gridX = minmax(Math.floor(e.clientX / (canvasX / gridX)), 0, gridX - 1)
+  mouse.gridY = minmax(Math.floor(e.clientY / (canvasY / gridY)), 0, gridY - 1)
+}
+
+document.addEventListener('mousedown', e => {
+  const button = event.button;
+  if (!pressedButtons.includes(button)) {
+    clickTracker[button] = true
+    pressedButtons.push(button)
+  }
+});
+
+document.addEventListener('mouseup', e => {
+  const button = event.button;
+  if (pressedButtons.includes(button)) {
+    clickTracker[button] = false
+  }
+  pressedButtons.splice(pressedButtons.indexOf(button), 1)
+});
+
+document.addEventListener("contextmenu", e => e.preventDefault());
+
+function resize() {
+  canvas.width = canvasX = window.innerWidth
+  canvas.height = canvasY = window.innerHeight
+  if (!warp) {
+    canvasX = Math.min(canvasX, canvasY)
+    canvasY = canvasX
+  }
+}
+window.onresize = resize
+resize()
+
+function checkInput(i) {
+  let state = true
+  if (i.input.keys != undefined) {
+    if (i.input.keys.whitelist != undefined) {
+      i.input.keys.whitelist.forEach((n) => {
+        if (!pressedKeys.includes(n)) {
+          state = false
+        }
+      })
+    }
+    if (i.input.keys.blacklist != undefined) {
+      i.input.keys.blacklist.forEach((n) => {
+        if (pressedKeys.includes(n)) {
+          state = false
+        }
+      })
+    }
+  }
+  if (i.input.buttons != undefined) {
+    if (i.input.buttons.whitelist != undefined) {
+      i.input.buttons.whitelist.forEach((n) => {
+        if (!pressedButtons.includes(n)) {
+          state = false
+        }
+      })
+    }
+    if (i.input.buttons.blacklist != undefined) {
+      i.input.buttons.blacklist.forEach((n) => {
+        if (pressedButtons.includes(n)) {
+          state = false
+        }
+      })
+    }
+  }
+  if (i.input.other != undefined) {
+    if (!i.input.other()) {
+      state = false
+    }
+  }
+  if ((i.mode.when === "onPress" || i.mode.when === "onRelease") && i.mode.old === undefined) {
+    i.mode.old = false
+  }
+  if (i.mode.when === "onPress" && state && !i.mode.old) {
+    i.output()
+  }
+  if (i.mode.when === "onRelease" && !state && i.mode.old) {
+    i.output()
+  }
+  if (i.mode.when === "hold" && state) {
+    i.output()
+  }
+  i.mode.old = state
+}
+
+function minmax(i, min, max) {
+  return (Math.max(Math.min(i, max), min))
+}
+
+function clearSlate() {
+  ctx.fillStyle = colorKey[colorMode][0]
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+}
+
+function renderWorld() {
+  for (var y = 0; y < gridY; y++) {
+    for (var x = 0; x < gridX; x++) {
+      ctx.fillStyle = colorKey[colorMode][world[y][x]]
+      ctx.fillRect(x * (canvasX / gridX), y * (canvasY / gridY), canvasX / gridX + 1, canvasY / gridY + 1)
+    }
+  }
+}
+
+function update(time) {
+  deltaTime = time - lastTime
+  lastTime = time
+
+  clearSlate()
+  renderWorld()
+  renderMenu(nav[nav.length-1])
+
+  triggers.forEach((input) => {
+    checkInput(input)
+  })
+
+  //ctx.fillStyle = colorKey[colorMode][2]
+  //ctx.fillRect(mouse.gridX * (canvasX / gridX), mouse.gridY * (canvasY / gridY), canvasX / gridX + 1, canvasY / gridY + 1)
+
+  log = "x:" + mouse.x + " y:" + mouse.y + " grid x:" + mouse.gridX + " grid y:" + mouse.gridY + " wheel:" + wheelScroll + " keys:" + pressedKeys + " mouse buttons:" + pressedButtons + " buttons clicked:" + clickTracker + " string:" + string.join('')
+  if (log != oldLog && devLog) {
+    console.log(log)
+  }
+  oldLog = log
+
+  requestAnimationFrame(update)
+}
+requestAnimationFrame(update)
