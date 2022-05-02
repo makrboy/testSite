@@ -606,7 +606,7 @@ let triggers = [
     },
     output: function() {
       string = JSON.parse(localStorage.getItem("main"))
-      ctx.fillStyle = colorKey[colorMode][3]
+      ctx.fillStyle = rgb(colors[3])
       ctx.fillRect(0, 0, canvasX, canvasY)
     }
   },
@@ -624,7 +624,7 @@ let triggers = [
     },
     output: function() {
       localStorage.setItem("main", JSON.stringify(string))
-      ctx.fillStyle = colorKey[colorMode][4]
+      ctx.fillStyle = rgb(colors[4])
       ctx.fillRect(0, 0, canvasX, canvasY)
     }
   }
@@ -657,7 +657,7 @@ let colorKey = [
   [`rgb(225,225,225,0.1)`, `rgb(0,0,0)`, `rgb(0,0,255)`, `rgb(255,0,0)`, `rgb(0,255,0)`, `rgb(0,0,0)`, `rgb(255,255,255)`],
   [`rgb(0,0,0,0.1)`, `rgb(225,225,225)`, `rgb(0,0,155)`, `rgb(155,0,0)`, `rgb(0,155,0)`, `rgb(255,255,255)`, `rgb(0,0,0)`]
 ]
-let colors = []
+let colors = [{r:0,g:0,b:0},{r:255,g:255,b:255},{r:0,g:0,b:155},{r:155,g:0,b:0},{r:0,g:155,b:0},{r:255,g:255,b:255},{r:0,g:0,b:0}]
 let brushColor
 let gridX = world[0].length
 let gridY = world.length
@@ -828,7 +828,8 @@ function menu(i) {
       ts = n.title.size
       to = n.title.offset
     }
-    ctx.fillStyle = colorKey[colorMode][n.grid.color]
+    ctx.fillStyle = rgb(colors[n.grid.color])
+    // console.log(rgb(colors[n.grid.color]))
     ctx.fillRect(sx * (cx / fcx), sy * (cy / fcy), (ex - sx) * (cx / fcx), (ey - sy) * (cy / fcy))
     const unlockedButtons=n.buttons.filter(button => button.condition==undefined || button.condition()!==false)
     for (var y = 0; y < gy; y++) {
@@ -867,20 +868,20 @@ function menu(i) {
             y1 = to * (cy / fcy) + sy * (cy / fcy) + y * ((ey - sy - to) / gy) * (cy / fcy)
             y2 = ((ey - sy - to) / gy) * (cy / fcy)
           }
-          ctx.fillStyle = colorKey[colorMode][b.effects[b.state.curent].color]
+          ctx.fillStyle = rgb(colors[b.effects[b.state.curent].color])
           ctx.fillRect(x1, y1, x2, y2)
           const e = b.state.curent
           if (b.effects[e].title != undefined) {
             const t = b.effects[e].title
             ctx.font = t.size * Math.min(1 / gx, 1 / gy) * Math.min(cx / fcx, cy / fcy) + "px Arial"
-            ctx.fillStyle = colorKey[colorMode][t.color]
+            ctx.fillStyle = rgb(colors[t.color])
             ctx.fillText(t.text, x1 + x2 / 2, y1 + y2 / 2)
           }
         }
       }
     }
     if (n.title != undefined) {
-      ctx.fillStyle = colorKey[colorMode][n.title.color]
+      ctx.fillStyle = rgb(colors[n.title.color])
       ctx.font = ts * Math.min(cx / fcx, cy / fcy) + "px Arial";
       ctx.fillText(tw, (ex - (ex - sx) / 2) * (cx / fcx), (sy + to / 2) * (cy / fcy))
     }
@@ -894,13 +895,13 @@ function minmax(i, min, max) {
   return (Math.max(Math.min(i, max), min))
 }
 function clearSlate() {
-  ctx.fillStyle = colorKey[colorMode][0]
+  ctx.fillStyle = rgb(colors[0])
   ctx.fillRect(0, 0, canvas.width, canvas.height)
 }
 function renderWorld() {
   for (var y = 0; y < gridY; y++) {
     for (var x = 0; x < gridX; x++) {
-      ctx.fillStyle = colorKey[colorMode][world[y][x]]
+      ctx.fillStyle = rgb(colors[world[y][x]])
       ctx.fillRect(x * (canvasX / gridX), y * (canvasY / gridY), canvasX / gridX + 1, canvasY / gridY + 1)
     }
   }
@@ -916,9 +917,6 @@ function update(time) {
   triggers.forEach((input) => {
     checkInput(input)
   })
-
-  //ctx.fillStyle = colorKey[colorMode][2]
-  //ctx.fillRect(mouse.gridX * (canvasX / gridX), mouse.gridY * (canvasY / gridY), canvasX / gridX + 1, canvasY / gridY + 1)
 
   log = "x:" + mouse.x + " y:" + mouse.y + " grid x:" + mouse.gridX + " grid y:" + mouse.gridY + " wheel:" + wheelScroll + " keys:" + pressedKeys + " mouse buttons:" + pressedButtons + " buttons clicked:" + clickTracker + " string:" + string.join('')
   if (log != oldLog && devLog) {
