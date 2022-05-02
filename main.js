@@ -221,38 +221,7 @@ let menus = {
         state: {
           default: "click"
         }
-      }, // dev settings
-      {
-        values: ["1", "2"],
-        effects: {
-          "1": {
-            title: {
-              text: `Color Mode 1`,
-              size: 13,
-              color: 5
-            },
-            func: function() {
-              colorMode = 0
-            },
-            color: 2
-          },
-          "2": {
-            title: {
-              text: `Color Mode 2`,
-              size: 13,
-              color: 5
-            },
-            func: function() {
-              colorMode = 1
-            },
-            color: 2
-          }
-
-        },
-        state: {
-          default: "2"
-        }
-      }  // color mode
+      } // dev settings
     ]
   },
   colorPicker: {
@@ -261,23 +230,24 @@ let menus = {
 				const i = menus.colorPicker
 				i.buttons=[]
 				for (var n=0;n<colors.length;n++) {
-          console.log(n)
-					i.buttons.push({
-        values: ["click"],
-        effects: {
-          "click": {
-            func: function(i) {
-              console.log(i.effect)
-              brushColor = i.effect.color
-              i.menu.grid.color=brushColor
+          i.buttons.push({
+            values: ["click"],
+            effects: {
+              "click": {
+                func: function(i) {
+                  brushColor = i.effect.color
+                  i.menu.grid.color=brushColor
+                  if (i.menu.title.color===brushColor) {
+                    i.menu.title.color=Math.floor(Math.random()*colors.length)
+                  }
+                },
+                color: n
+              }
             },
-            color: n
-          }
-        },
-        state: {
-          default: "click"
-        }
-      })
+            state: {
+              default: "click"
+            }
+          })
 				}
 			}
 		},
