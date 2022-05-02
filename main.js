@@ -1,5 +1,7 @@
 const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
+let brushColor = 0
+
 const allowedNameChars = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l",
   "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C",
   "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
@@ -259,15 +261,17 @@ let menus = {
 				const i = menus.colorPicker
 				i.buttons=[]
 				for (var n=0;n<colors.length;n++) {
-					const c = colors[n]
+          console.log(n)
 					i.buttons.push({
         values: ["click"],
         effects: {
           "click": {
-            func: function() {
-              brushColor = c
+            func: function(i) {
+              console.log(i.effect)
+              brushColor = i.effect.color
+              i.menu.grid.color=brushColor
             },
-            color: rgb(c)
+            color: n
           }
         },
         state: {
@@ -658,7 +662,6 @@ let colorKey = [
   [`rgb(0,0,0,0.1)`, `rgb(225,225,225)`, `rgb(0,0,155)`, `rgb(155,0,0)`, `rgb(0,155,0)`, `rgb(255,255,255)`, `rgb(0,0,0)`]
 ]
 let colors = [{r:0,g:0,b:0},{r:255,g:255,b:255},{r:0,g:0,b:155},{r:155,g:0,b:0},{r:0,g:155,b:0},{r:255,g:255,b:255},{r:0,g:0,b:0}]
-let brushColor
 let gridX = world[0].length
 let gridY = world.length
 let pressedKeys = []
@@ -725,8 +728,17 @@ function resize() {
 }
 window.onresize = resize
 resize()
-function rgb(i) {
-  return ("rgb("+i.r+","+i.g+","+i.b+")")
+function rgb(i,g,b,a) {
+  if (g===undefined) {
+    let a = 1
+    if (i.a!==undefined) {
+      a = i.a
+    }
+    return ("rgb("+i.r+","+i.g+","+i.b+","+a+")")
+  } else {
+    a = a || 1
+    return ("rgb("+r+","+g+","+b+","+a+")")
+  }
 }
 function checkInput(i) {
   let state = true
@@ -829,7 +841,6 @@ function menu(i) {
       to = n.title.offset
     }
     ctx.fillStyle = rgb(colors[n.grid.color])
-    // console.log(rgb(colors[n.grid.color]))
     ctx.fillRect(sx * (cx / fcx), sy * (cy / fcy), (ex - sx) * (cx / fcx), (ey - sy) * (cy / fcy))
     const unlockedButtons=n.buttons.filter(button => button.condition==undefined || button.condition()!==false)
     for (var y = 0; y < gy; y++) {
@@ -855,14 +866,15 @@ function menu(i) {
                 clickTracker[2] = false
               }
               const d = {
-                x: x,
-                y: y,
+                gridX: x,
+                gridY: y,
+                menu: n,
                 button: b,
+                value: b.state.curent,
+                effect: b.effects[b.state.curent]
               }
               b.effects[b.state.curent].func(d)
             }
-            ctx.fillStyle = `rgb(0,0,0,0.5)`
-            ctx.fillRect(x1, y1, x2, y2)
             x1 = sx * (cx / fcx) + x * ((ex - sx) / gx) * (cx / fcx)
             x2 = ((ex - sx) / gx) * (cx / fcx)
             y1 = to * (cy / fcy) + sy * (cy / fcy) + y * ((ey - sy - to) / gy) * (cy / fcy)
