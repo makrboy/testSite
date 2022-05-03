@@ -789,9 +789,9 @@ let triggers = [
 const fcx = 100
 const fcy = 100
 let clickTracker = [false, false, false]
-let showButtonSpots = false
-let warp = false
-let devLog = true
+let showButtonSpots = load("showButtonSpots",false)
+let warp = load("warp",true)
+let devLog = load("devLog",false)
 let world = [
   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   [0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
@@ -804,22 +804,17 @@ let world = [
   [0, 0, 0, 1, 1, 1, 1, 0, 0, 0],
   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 ]
-let string = []
+let string = load("string",[])
 let deltaTime = 0
 let canvasX = 0
 let canvasY = 0
 let lastTime = 0
-let colorMode = 1
-let colorKey = [
-  [`rgb(225,225,225,0.1)`, `rgb(0,0,0)`, `rgb(0,0,255)`, `rgb(255,0,0)`, `rgb(0,255,0)`, `rgb(0,0,0)`, `rgb(255,255,255)`],
-  [`rgb(0,0,0,0.1)`, `rgb(225,225,225)`, `rgb(0,0,155)`, `rgb(155,0,0)`, `rgb(0,155,0)`, `rgb(255,255,255)`, `rgb(0,0,0)`]
-]
-let colors = [{r:0,g:0,b:0},{r:255,g:255,b:255},{r:0,g:0,b:155},{r:155,g:0,b:0},{r:0,g:155,b:0},{r:255,g:255,b:255},{r:0,g:0,b:0},{r:0,b:255,g:255},{r:255,g:255,b:0},{r:255,g:0,b:255},{r:176,g:50,b:79}]
+let colors = load("colors",[{r:0,g:0,b:0},{r:255,g:255,b:255},{r:0,g:0,b:155},{r:155,g:0,b:0},{r:0,g:155,b:0},{r:255,g:255,b:255},{r:0,g:0,b:0},{r:0,b:255,g:255},{r:255,g:255,b:0},{r:255,g:0,b:255},{r:176,g:50,b:79}])
 let gridX = world[0].length
 let gridY = world.length
 let pressedKeys = []
 let pressedButtons = []
-let nav = []
+let nav = load("nav",[])
 let wheelScroll = 0
 let oldWheelScroll = 0
 let mouse = {
@@ -881,6 +876,20 @@ function resize() {
 }
 window.onresize = resize
 resize()
+function load(key,def) {
+  let grab = get(key)
+  let data = def
+  if (grab!==null) {
+    data = grab
+  }
+  return data
+}
+function get(i) {
+  return localStorage.getItem(i)
+}
+function save(key,data) {
+  localStorage.setItem(key,data)
+}
 function rgb(i) {
   if (i.r!==undefined) {
     let a = 1
@@ -951,7 +960,7 @@ function checkInput(i) {
   i.mode.old = state
 }
 function menu(i) {
-  if (menus[i] != undefined) {
+  if (menus[i] !== undefined) {
     const n = menus[i]
     if (n.setup!=undefined&&n.setup.state!==false) {
       n.setup.state = false
@@ -1056,6 +1065,8 @@ function menu(i) {
       ctx.fillText(tw, (ex - (ex - sx) / 2) * (cx / fcx), (sy + to / 2) * (cy / fcy))
     }
     oldWheelScroll = wheelScroll
+  } else if (nav.length>0) {
+    nav.pop()
   }
 }
 function arraySame(i,n) {
