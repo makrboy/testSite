@@ -217,7 +217,7 @@ let menus = {
     setup: {
 			func: function() {
 				const i = menus.colorPicker
-				i.buttons.splice(1)
+				i.buttons.splice(2)
 				for (var n=0;n<colors.length;n++) {
           i.buttons.push({
             values: ["click"],
@@ -269,14 +269,39 @@ let menus = {
         state: {
           default: "click"
         }
-      }, // canvas
+      }, // color editor
+      {
+        values: ["click"],
+        effects: {
+          "click": {
+            title: {
+              text: "Copy Color",
+              size: 13,
+              color: 5
+            },
+            func: function(i) {
+              if (brushColor.r!==undefined) {
+                colors.push(brushColor)
+              } else {
+                colors.push(colors[brushColor])
+              }
+              i.menu.setup.state=true
+            },
+            color: 2
+          }
+        },
+        state: {
+          default: "click"
+        }
+      }, // copy color
+
     ]
   },
   colorEditor: {
     setup: {
 			func: function() {
 				const i = menus.colorEditor
-				i.buttons.splice(1)
+				i.buttons=[]
         i.buttons.push({
           values: [],
           effects: {
@@ -306,7 +331,7 @@ let menus = {
             color: {r:j,g:0,b:0},
             func: function(i){
               i.menu.grid.color.r=i.button.values.indexOf(i.value)
-              brushColor.r=i.button.values.indexOf(i.value)
+              colors[brushColor].r=i.button.values.indexOf(i.value)
             }
           }
         }
@@ -339,7 +364,7 @@ let menus = {
             color: {r:0,g:j,b:0},
             func: function(i){
               i.menu.grid.color.g=i.button.values.indexOf(i.value)
-              brushColor.g=i.button.values.indexOf(i.value)
+              colors[brushColor].g=i.button.values.indexOf(i.value)
             }
           }
         }
@@ -372,7 +397,7 @@ let menus = {
             color: {r:0,g:0,b:j},
             func: function(i){
               i.menu.grid.color.b=i.button.values.indexOf(i.value)
-              brushColor.b=i.button.values.indexOf(i.value)
+              colors[brushColor].b=i.button.values.indexOf(i.value)
             }
           }
         }
@@ -405,25 +430,21 @@ let menus = {
             color: {r:0,g:0,b:0,a:j/100},
             func: function(i){
               i.menu.grid.color.a=i.button.values.indexOf(i.value)/100
-              brushColor.a=i.button.values.indexOf(i.value)/100
+              colors[brushColor].a=i.button.values.indexOf(i.value)/100
             }
           }
         }
         let c
-        if (brushColor.r!== undefined) {
-          c = brushColor
-        } else {
-          c = colors[brushColor]
-        }
+        c = colors[brushColor]
         let a = 1
         if (c.a!==undefined) {
           a=c.a
         }
-        i.buttons[1].state.curent="\""+c.r+"\""
-        i.buttons[2].state.curent="\""+c.g+"\""
-        i.buttons[3].state.curent="\""+c.b+"\""
-        i.buttons[4].state.curent="\""+a*100+"\""
-        brushColor={r:c.r,g:c.g,b:c.b,a:a}
+        i.buttons[0].state.curent="\""+c.r+"\""
+        i.buttons[1].state.curent="\""+c.g+"\""
+        i.buttons[2].state.curent="\""+c.b+"\""
+        i.buttons[3].state.curent="\""+a*100+"\""
+        //brushColor={r:c.r,g:c.g,b:c.b,a:a}
         i.grid.color={r:c.r,g:c.g,b:c.b,a:a}
       }
 		},
@@ -438,25 +459,6 @@ let menus = {
       offset: 10
     },
     buttons: [ //
-    {
-      values: ["click"],
-      effects: {
-        "click": {
-          title: {
-            text: "Create Color",
-            size: 13,
-            color: 5
-          },
-          func: function() {
-            colors.push(brushColor)            
-          },
-          color: 2
-        }
-      },
-      state: {
-        default: "click"
-      }
-    }
     ]
   },
   editor: {
@@ -699,7 +701,7 @@ let triggers = [
     output: function() {
       nav = ["pauseMenu"]
     }
-  },
+  }, // backspace to menu
 	{
     input: {
       keys: {
@@ -719,8 +721,11 @@ let triggers = [
 			if (menus[i].setup!=undefined) {
 				menus[i].setup.state=true
 			}
+      if (menus[nav.length-2]!=undefined&&menus[nav.length-2].setup!=undefined) {
+        menus[nav.length-2].setup.state=true
+      }
     }
-  },
+  }, // back menu
   {
     input: {
       buttons: {
@@ -815,7 +820,6 @@ let pressedButtons = []
 let nav = []
 let wheelScroll = 0
 let oldWheelScroll = 0
-let oldNav = []
 let mouse = {
   x: 0,
   y: 0,
@@ -1051,6 +1055,19 @@ function menu(i) {
     oldWheelScroll = wheelScroll
   }
 }
+function arraySame(i,n) {
+  let state = true
+  if(i.length===n.length) {
+      for (var index=0;index<i.length;index++) {
+        if (i[index]!==n[index]) {
+          state = false
+        }
+      }
+  } else {
+    state = false
+  }
+  return state
+}
 function buttonPressed(i) {
   clickTracker[i] = true
 }
@@ -1080,19 +1097,88 @@ function update(time) {
   triggers.forEach((input) => {
     checkInput(input)
   })
-  const state = oldNav.length!==nav.length
-  console.log("nav:"+nav.length+" oldNav:"+oldNav.length+" different:"+state)
-  if(state) {
-    //console.log("update")
-    //oldNav=nav
-  }
 
   log = "x:" + mouse.x + " y:" + mouse.y + " grid x:" + mouse.gridX + " grid y:" + mouse.gridY + " wheel:" + wheelScroll + " keys:" + pressedKeys + " mouse buttons:" + pressedButtons + " buttons clicked:" + clickTracker + " string:" + string.join('') + " BrushColor:" + JSON.stringify(brushColor)
   if (log != oldLog && devLog) {
     console.log(log)
   }
   oldLog = log
-
+  
   requestAnimationFrame(update)
 }
 requestAnimationFrame(update)
+
+
+
+
+// Browser support
+window.AudioContext = window.AudioContext || window.webkitAudioContext;
+
+// Initialize audio context
+const context = new AudioContext();
+
+let notes = [
+  {
+    start: 0,
+    freq: 300,
+    time: 0.1
+  },
+  {
+    start: 0.1,
+    freq: 250,
+    time: 0.1
+  },
+  {
+    start: 0.2,
+    freq: 300,
+    time: 0.1
+  },
+  {
+    start: 0.4,
+    freq: 300,
+    time: 0.1
+  },
+  {
+    start: 0.5,
+    freq: 250,
+    time: 0.1
+  },
+  {
+    start: 0.6,
+    freq: 300,
+    time: 0.1
+  },
+  {
+    start: 0.8,
+    freq: 350,
+    time: 0.1
+  },
+  {
+    start: 0.9,
+    freq: 300,
+    time: 0.1
+  },
+  {
+    start: 1,
+    freq: 200,
+    time: 0.1
+  },
+
+
+
+
+  {
+    start: 1,
+    freq: 300,
+    time: 0
+  },
+]
+
+for (const i in notes) {
+  const oscillator = context.createOscillator();
+  oscillator.frequency.value = notes[i].freq;
+  oscillator.type = 'square';
+  oscillator.connect(context.destination);
+  oscillator.start(notes[i].start);
+  oscillator.stop(notes[i].time+notes[i].start)
+}
