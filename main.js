@@ -1073,8 +1073,6 @@ function update(time) {
   deltaTime = time - lastTime
   lastTime = time
   
-  console.log(nav)
-
   clearSlate()
   renderWorld()
   menu(nav[nav.length-1])
