@@ -1023,14 +1023,6 @@ function menu(i) {
                 b.state.curent = b.values[(b.values.indexOf(b.state.curent) + b.values.length * m + 1 * m) % b.values.length]
                 clickTracker[2] = false
               }
-              /*if (clickTracker[0] === true || oldWheelScroll < wheelScroll) {
-                b.state.curent = b.values[(b.values.indexOf(b.state.curent) + b.values.length - 1) % b.values.length]
-                clickTracker[0] = false
-              }
-              if (clickTracker[2] === true || oldWheelScroll > wheelScroll) { 
-                b.state.curent = b.values[(b.values.indexOf(b.state.curent) + b.values.length + 1) % b.values.length]
-                clickTracker[2] = false
-              }*/
               const d = {
                 gridX: x,
                 gridY: y,
