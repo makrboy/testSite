@@ -3,7 +3,6 @@ const context = new AudioContext()
 const canvas = document.querySelector('canvas')
 const ctx = canvas.getContext('2d')
 let brushColor = 0
-
 const allowedNameChars = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l",
   "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C",
   "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
@@ -784,6 +783,64 @@ let mouse = {
 }
 let log = ""
 let oldLog = ""
+
+let notes = [
+  {
+    start: 0,
+    freq: 300,
+    time: 0.1
+  },
+  {
+    start: 0.1,
+    freq: 250,
+    time: 0.1
+  },
+  {
+    start: 0.2,
+    freq: 300,
+    time: 0.1
+  },
+  {
+    start: 0.4,
+    freq: 300,
+    time: 0.1
+  },
+  {
+    start: 0.5,
+    freq: 250,
+    time: 0.1
+  },
+  {
+    start: 0.6,
+    freq: 300,
+    time: 0.1
+  },
+  {
+    start: 0.8,
+    freq: 350,
+    time: 0.1
+  },
+  {
+    start: 0.9,
+    freq: 300,
+    time: 0.1
+  },
+  {
+    start: 1,
+    freq: 200,
+    time: 0.1
+  },
+]
+
+for (const i in notes) {
+  const oscillator = context.createOscillator();
+  oscillator.frequency.value = notes[i].freq;
+  oscillator.type = 'square';
+  oscillator.connect(context.destination);
+  oscillator.start(notes[i].start);
+  oscillator.stop(notes[i].time+notes[i].start)
+}
+
 onmousemove = function(e) {
   mouse.x = minmax(e.clientX, 0, canvasX)
   mouse.y = minmax(e.clientY, 0, canvasY)
@@ -858,7 +915,6 @@ function save() {
     localStorage.setItem(i[n][1],JSON.stringify(i[n][0]))
   }
 }
-
 function rgb(i) {
   if (i.r!==undefined) {
     let a = 1
@@ -1091,68 +1147,3 @@ function update(time) {
   requestAnimationFrame(update)
 }
 requestAnimationFrame(update)
-let notes = [
-  {
-    start: 0,
-    freq: 300,
-    time: 0.1
-  },
-  {
-    start: 0.1,
-    freq: 250,
-    time: 0.1
-  },
-  {
-    start: 0.2,
-    freq: 300,
-    time: 0.1
-  },
-  {
-    start: 0.4,
-    freq: 300,
-    time: 0.1
-  },
-  {
-    start: 0.5,
-    freq: 250,
-    time: 0.1
-  },
-  {
-    start: 0.6,
-    freq: 300,
-    time: 0.1
-  },
-  {
-    start: 0.8,
-    freq: 350,
-    time: 0.1
-  },
-  {
-    start: 0.9,
-    freq: 300,
-    time: 0.1
-  },
-  {
-    start: 1,
-    freq: 200,
-    time: 0.1
-  },
-
-
-
-
-  {
-    start: 1,
-    freq: 300,
-    time: 0
-  },
-]
-
-for (const i in notes) {
-  const oscillator = context.createOscillator();
-  oscillator.frequency.value = notes[i].freq;
-  oscillator.type = 'square';
-  oscillator.connect(context.destination);
-  oscillator.start(notes[i].start);
-  oscillator.stop(notes[i].time+notes[i].start)
-}
