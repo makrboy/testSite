@@ -1,5 +1,7 @@
-const canvas = document.querySelector('canvas');
-const ctx = canvas.getContext('2d');
+window.AudioContext = window.AudioContext || window.webkitAudioContext;
+const context = new AudioContext()
+const canvas = document.querySelector('canvas')
+const ctx = canvas.getContext('2d')
 let brushColor = 0
 
 const allowedNameChars = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l",
@@ -1011,15 +1013,24 @@ function menu(i) {
           }
           if (mx >= x1 && mx <= x1 + x2 && my >= y1 && my <= y1 + y2) {
             const i = y * gx + x
-            if (clickTracker[0] === true || clickTracker[2] === true || oldWheelScroll !== wheelScroll) {
+            if (clickTracker[0]|| clickTracker[2]|| oldWheelScroll !== wheelScroll) {
+              let m=9*pressedKeys.includes("Shift")+1
               if (clickTracker[0] === true || oldWheelScroll < wheelScroll) {
+                b.state.curent = b.values[(b.values.indexOf(b.state.curent) + b.values.length * m - 1 * m) % b.values.length]
+                clickTracker[0] = false
+              }
+              if (clickTracker[2] === true || oldWheelScroll > wheelScroll) { 
+                b.state.curent = b.values[(b.values.indexOf(b.state.curent) + b.values.length * m + 1 * m) % b.values.length]
+                clickTracker[2] = false
+              }
+              /*if (clickTracker[0] === true || oldWheelScroll < wheelScroll) {
                 b.state.curent = b.values[(b.values.indexOf(b.state.curent) + b.values.length - 1) % b.values.length]
                 clickTracker[0] = false
               }
-              if (clickTracker[2] === true || oldWheelScroll > wheelScroll) {
+              if (clickTracker[2] === true || oldWheelScroll > wheelScroll) { 
                 b.state.curent = b.values[(b.values.indexOf(b.state.curent) + b.values.length + 1) % b.values.length]
                 clickTracker[2] = false
-              }
+              }*/
               const d = {
                 gridX: x,
                 gridY: y,
@@ -1107,16 +1118,6 @@ function update(time) {
   requestAnimationFrame(update)
 }
 requestAnimationFrame(update)
-
-
-
-
-// Browser support
-window.AudioContext = window.AudioContext || window.webkitAudioContext;
-
-// Initialize audio context
-const context = new AudioContext();
-
 let notes = [
   {
     start: 0,
