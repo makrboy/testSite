@@ -12,17 +12,6 @@ const allowedNameChars = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k",
   home: {
     play: {
       levels: {},
-
-363px
-Console (beta)
-Clear console
-Minimize
-104
-0
-0
-0
-"x:339 y:340 grid x:9 grid y:9 wheel:0 keys: mouse buttons: string:"
-
       demo: {},
       myLevels: {},
       userLevels: {}
@@ -228,7 +217,7 @@ let menus = {
     setup: {
 			func: function() {
 				const i = menus.colorPicker
-				i.buttons=[]
+				i.buttons.splice(1)
 				for (var n=0;n<colors.length;n++) {
           i.buttons.push({
             values: ["click"],
@@ -237,7 +226,7 @@ let menus = {
                 func: function(i) {
                   brushColor = i.effect.color
                   i.menu.grid.color=brushColor
-                  if (i.menu.title.color===brushColor) {
+                  while (i.menu.title.color===brushColor) {
                     i.menu.title.color=Math.floor(Math.random()*colors.length)
                   }
                 },
@@ -267,12 +256,12 @@ let menus = {
         effects: {
           "click": {
             title: {
-              text: "Canvas",
+              text: "Color Editor",
               size: 13,
               color: 5
             },
             func: function() {
-              nav.push("levelCanvas")
+              nav.push("colorEditor")
             },
             color: 2
           }
@@ -281,6 +270,193 @@ let menus = {
           default: "click"
         }
       }, // canvas
+    ]
+  },
+  colorEditor: {
+    setup: {
+			func: function() {
+				const i = menus.colorEditor
+				i.buttons.splice(1)
+        i.buttons.push({
+          values: [],
+          effects: {
+            "0": {
+              color: 5,
+              func: function(){},
+              title: {
+                text: "Press Me to Initialize",
+                size: 7,
+                color: 6
+              }
+            }
+          },
+          state: {
+            default: "0"
+          }
+        })
+        for (var j=0;j<256;j++) {
+          let k = i.buttons[i.buttons.length-1]
+          k.values.push("\""+j+"\"")
+          k.effects["\""+j+"\""] = {
+            title: {
+              text: "Red: "+j,
+              size: 15,
+              color: 5
+            },
+            color: {r:j,g:0,b:0},
+            func: function(i){
+              i.menu.grid.color.r=i.button.values.indexOf(i.value)
+              brushColor.r=i.button.values.indexOf(i.value)
+            }
+          }
+        }
+        i.buttons.push({
+          values: [],
+          effects: {
+            "0": {
+              color: 5,
+              func: function(){},
+              title: {
+                text: "Press Me to Initialize",
+                size: 7,
+                color: 6
+              }
+            }
+          },
+          state: {
+            default: "0"
+          }
+        })
+        for (var j=0;j<256;j++) {
+          let k = i.buttons[i.buttons.length-1]
+          k.values.push("\""+j+"\"")
+          k.effects["\""+j+"\""] = {
+            title: {
+              text: "Green: "+j,
+              size: 15,
+              color: 5
+            },
+            color: {r:0,g:j,b:0},
+            func: function(i){
+              i.menu.grid.color.g=i.button.values.indexOf(i.value)
+              brushColor.g=i.button.values.indexOf(i.value)
+            }
+          }
+        }
+        i.buttons.push({
+          values: [],
+          effects: {
+            "0": {
+              color: 5,
+              func: function(){},
+              title: {
+                text: "Press Me to Initialize",
+                size: 7,
+                color: 6
+              }
+            }
+          },
+          state: {
+            default: "0"
+          }
+        })
+        for (var j=0;j<256;j++) {
+          let k = i.buttons[i.buttons.length-1]
+          k.values.push("\""+j+"\"")
+          k.effects["\""+j+"\""] = {
+            title: {
+              text: "Blue: "+j,
+              size: 15,
+              color: 5
+            },
+            color: {r:0,g:0,b:j},
+            func: function(i){
+              i.menu.grid.color.b=i.button.values.indexOf(i.value)
+              brushColor.b=i.button.values.indexOf(i.value)
+            }
+          }
+        }
+        i.buttons.push({
+          values: [],
+          effects: {
+            "0": {
+              color: 5,
+              func: function(){},
+              title: {
+                text: "Press Me to Initialize",
+                size: 7,
+                color: 6
+              }
+            }
+          },
+          state: {
+            default: "0"
+          }
+        })
+        for (var j=0;j<101;j++) {
+          let k = i.buttons[i.buttons.length-1]
+          k.values.push("\""+j+"\"")
+          k.effects["\""+j+"\""] = {
+            title: {
+              text: "Alpha: "+j,
+              size: 15,
+              color: 5
+            },
+            color: {r:0,g:0,b:0,a:j/100},
+            func: function(i){
+              i.menu.grid.color.a=i.button.values.indexOf(i.value)/100
+              brushColor.a=i.button.values.indexOf(i.value)/100
+            }
+          }
+        }
+        let c
+        if (brushColor.r!== undefined) {
+          c = brushColor
+        } else {
+          c = colors[brushColor]
+        }
+        let a = 1
+        if (c.a!==undefined) {
+          a=c.a
+        }
+        i.buttons[1].state.curent="\""+c.r+"\""
+        i.buttons[2].state.curent="\""+c.g+"\""
+        i.buttons[3].state.curent="\""+c.b+"\""
+        i.buttons[4].state.curent="\""+a*100+"\""
+        brushColor={r:c.r,g:c.g,b:c.b,a:a}
+        i.grid.color={r:c.r,g:c.g,b:c.b,a:a}
+      }
+		},
+    grid: {
+      padding: 0.15,
+      color: {r:0,g:0,b:0}
+    },
+    title: {
+      text: "Color Editor",
+      size: 7,
+      color: 5,
+      offset: 10
+    },
+    buttons: [ //
+    {
+      values: ["click"],
+      effects: {
+        "click": {
+          title: {
+            text: "Create Color",
+            size: 13,
+            color: 5
+          },
+          func: function() {
+            colors.push(brushColor)            
+          },
+          color: 2
+        }
+      },
+      state: {
+        default: "click"
+      }
+    }
     ]
   },
   editor: {
@@ -580,7 +756,7 @@ let triggers = [
     },
     output: function() {
       string = JSON.parse(localStorage.getItem("main"))
-      ctx.fillStyle = rgb(colors[3])
+      ctx.fillStyle = rgb(3)
       ctx.fillRect(0, 0, canvasX, canvasY)
     }
   },
@@ -598,7 +774,7 @@ let triggers = [
     },
     output: function() {
       localStorage.setItem("main", JSON.stringify(string))
-      ctx.fillStyle = rgb(colors[4])
+      ctx.fillStyle = rgb(4)
       ctx.fillRect(0, 0, canvasX, canvasY)
     }
   }
@@ -631,7 +807,7 @@ let colorKey = [
   [`rgb(225,225,225,0.1)`, `rgb(0,0,0)`, `rgb(0,0,255)`, `rgb(255,0,0)`, `rgb(0,255,0)`, `rgb(0,0,0)`, `rgb(255,255,255)`],
   [`rgb(0,0,0,0.1)`, `rgb(225,225,225)`, `rgb(0,0,155)`, `rgb(155,0,0)`, `rgb(0,155,0)`, `rgb(255,255,255)`, `rgb(0,0,0)`]
 ]
-let colors = [{r:0,g:0,b:0},{r:255,g:255,b:255},{r:0,g:0,b:155},{r:155,g:0,b:0},{r:0,g:155,b:0},{r:255,g:255,b:255},{r:0,g:0,b:0}]
+let colors = [{r:0,g:0,b:0},{r:255,g:255,b:255},{r:0,g:0,b:155},{r:155,g:0,b:0},{r:0,g:155,b:0},{r:255,g:255,b:255},{r:0,g:0,b:0},{r:0,b:255,g:255},{r:255,g:255,b:0},{r:255,g:0,b:255},{r:176,g:50,b:79}]
 let gridX = world[0].length
 let gridY = world.length
 let pressedKeys = []
@@ -639,6 +815,7 @@ let pressedButtons = []
 let nav = []
 let wheelScroll = 0
 let oldWheelScroll = 0
+let oldNav = []
 let mouse = {
   x: 0,
   y: 0,
@@ -698,16 +875,20 @@ function resize() {
 }
 window.onresize = resize
 resize()
-function rgb(i,g,b,a) {
-  if (g===undefined) {
+function rgb(i) {
+  if (i.r!==undefined) {
     let a = 1
     if (i.a!==undefined) {
       a = i.a
     }
     return ("rgb("+i.r+","+i.g+","+i.b+","+a+")")
   } else {
-    a = a || 1
-    return ("rgb("+r+","+g+","+b+","+a+")")
+    i = colors[i]
+    let a = 1
+    if (i.a!==undefined) {
+      a = i.a
+    }
+    return ("rgb("+i.r+","+i.g+","+i.b+","+a+")")
   }
 }
 function checkInput(i) {
@@ -810,7 +991,7 @@ function menu(i) {
       ts = n.title.size
       to = n.title.offset
     }
-    ctx.fillStyle = rgb(colors[n.grid.color])
+    ctx.fillStyle = rgb(n.grid.color)
     ctx.fillRect(sx * (cx / fcx), sy * (cy / fcy), (ex - sx) * (cx / fcx), (ey - sy) * (cy / fcy))
     const unlockedButtons=n.buttons.filter(button => button.condition==undefined || button.condition()!==false)
     for (var y = 0; y < gy; y++) {
@@ -850,20 +1031,20 @@ function menu(i) {
             y1 = to * (cy / fcy) + sy * (cy / fcy) + y * ((ey - sy - to) / gy) * (cy / fcy)
             y2 = ((ey - sy - to) / gy) * (cy / fcy)
           }
-          ctx.fillStyle = rgb(colors[b.effects[b.state.curent].color])
+          ctx.fillStyle = rgb(b.effects[b.state.curent].color)
           ctx.fillRect(x1, y1, x2, y2)
           const e = b.state.curent
           if (b.effects[e].title != undefined) {
             const t = b.effects[e].title
             ctx.font = t.size * Math.min(1 / gx, 1 / gy) * Math.min(cx / fcx, cy / fcy) + "px Arial"
-            ctx.fillStyle = rgb(colors[t.color])
+            ctx.fillStyle = rgb(t.color)
             ctx.fillText(t.text, x1 + x2 / 2, y1 + y2 / 2)
           }
         }
       }
     }
     if (n.title != undefined) {
-      ctx.fillStyle = rgb(colors[n.title.color])
+      ctx.fillStyle = rgb(n.title.color)
       ctx.font = ts * Math.min(cx / fcx, cy / fcy) + "px Arial";
       ctx.fillText(tw, (ex - (ex - sx) / 2) * (cx / fcx), (sy + to / 2) * (cy / fcy))
     }
@@ -877,13 +1058,13 @@ function minmax(i, min, max) {
   return (Math.max(Math.min(i, max), min))
 }
 function clearSlate() {
-  ctx.fillStyle = rgb(colors[0])
+  ctx.fillStyle = rgb(0)
   ctx.fillRect(0, 0, canvas.width, canvas.height)
 }
 function renderWorld() {
   for (var y = 0; y < gridY; y++) {
     for (var x = 0; x < gridX; x++) {
-      ctx.fillStyle = rgb(colors[world[y][x]])
+      ctx.fillStyle = rgb(world[y][x])
       ctx.fillRect(x * (canvasX / gridX), y * (canvasY / gridY), canvasX / gridX + 1, canvasY / gridY + 1)
     }
   }
@@ -899,8 +1080,14 @@ function update(time) {
   triggers.forEach((input) => {
     checkInput(input)
   })
+  const state = oldNav.length!==nav.length
+  console.log("nav:"+nav.length+" oldNav:"+oldNav.length+" different:"+state)
+  if(state) {
+    //console.log("update")
+    //oldNav=nav
+  }
 
-  log = "x:" + mouse.x + " y:" + mouse.y + " grid x:" + mouse.gridX + " grid y:" + mouse.gridY + " wheel:" + wheelScroll + " keys:" + pressedKeys + " mouse buttons:" + pressedButtons + " buttons clicked:" + clickTracker + " string:" + string.join('')
+  log = "x:" + mouse.x + " y:" + mouse.y + " grid x:" + mouse.gridX + " grid y:" + mouse.gridY + " wheel:" + wheelScroll + " keys:" + pressedKeys + " mouse buttons:" + pressedButtons + " buttons clicked:" + clickTracker + " string:" + string.join('') + " BrushColor:" + JSON.stringify(brushColor)
   if (log != oldLog && devLog) {
     console.log(log)
   }
