@@ -282,11 +282,14 @@ let menus = {
               color: 5
             },
             func: function(i) {
+              let n
               if (brushColor.r!==undefined) {
-                colors.push(brushColor)
+                n=(brushColor)
               } else {
-                colors.push(colors[brushColor])
+                n=(colors[brushColor])
               }
+              n={r:n.r,g:n.g,b:n.b,a:n.a}
+              colors.push(n)
               i.menu.setup.state=true
             },
             color: 2
