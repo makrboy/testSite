@@ -733,59 +733,15 @@ let triggers = [
   }, // back menu
   {
     input: {
-      buttons: {
-        whitelist: [
-          1
-        ]
-      },
-      other: function() {
-        return nav.length>0
-      }
-    },
-    mode: {
-      when: "onRelease",
-    },
-    output: function() {
-      const i = nav.pop()
-			if (menus[i].setup!=undefined) {
-				menus[i].setup.state=true
-			}
-    }
-  },
-  {
-    input: {
       keys: {
-        whitelist: ["Shift"]
-      },
-      buttons: {
-        whitelist: [0]
+        whitelist: ["Control","Alt","s"]
       }
     },
     mode: {
       when: "onPress"
     },
     output: function() {
-      string = JSON.parse(localStorage.getItem("main"))
-      ctx.fillStyle = rgb(3)
-      ctx.fillRect(0, 0, canvasX, canvasY)
-    }
-  },
-  {
-    input: {
-      keys: {
-        whitelist: ["Shift"]
-      },
-      buttons: {
-        whitelist: [2]
-      }
-    },
-    mode: {
-      when: "onPress"
-    },
-    output: function() {
-      localStorage.setItem("main", JSON.stringify(string))
-      ctx.fillStyle = rgb(4)
-      ctx.fillRect(0, 0, canvasX, canvasY)
+      save()
     }
   }
 ]
@@ -883,16 +839,26 @@ function load(key,def) {
   let grab = get(key)
   let data = def
   if (grab!==null) {
-    data = grab
+    data = JSON.parse(grab)
   }
   return data
 }
 function get(i) {
-  return localStorage.getItem(i)
+  return (localStorage.getItem(i))
 }
-function save(key,data) {
-  localStorage.setItem(key,data)
+function save() {
+  const i = [ // var / key 
+    [colors,"colors"],
+    [nav,"nav"],
+    [warp,"warp"],
+    [devLog,"devLog"],
+    [showButtonSpots,"showButtonSpots"],
+  ]
+  for (var n=0;n<i.length;n++) {
+    localStorage.setItem(i[n][1],JSON.stringify(i[n][0]))
+  }
 }
+
 function rgb(i) {
   if (i.r!==undefined) {
     let a = 1
@@ -1106,6 +1072,8 @@ function renderWorld() {
 function update(time) {
   deltaTime = time - lastTime
   lastTime = time
+  
+  console.log(nav)
 
   clearSlate()
   renderWorld()
@@ -1121,6 +1089,7 @@ function update(time) {
   }
   oldLog = log
   
+
   requestAnimationFrame(update)
 }
 requestAnimationFrame(update)
