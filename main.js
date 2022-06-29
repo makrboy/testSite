@@ -860,10 +860,10 @@ let menus = {
                             date.push(Math.floor((Date.now()-user.update)/1000/60)%60)
                           }
                           if (Math.floor((Date.now()-user.update)/1000/60/60)>0) {
-                            date.push(Math.floor((Date.now()-user.update)/1000/60/60)%60)
+                            date.push(Math.floor((Date.now()-user.update)/1000/60/60)%24)
                           }
                           if (Math.floor((Date.now()-user.update)/1000/60/60/24)>0) {
-                            date.push(Math.floor((Date.now()-user.update)/1000/60/60/24)%24)
+                            date.push(Math.floor((Date.now()-user.update)/1000/60/60/24))
                           }
                           i.buttons[1].effects["click"].title.text=date.join(":")+" Since last update"
                         } else {
